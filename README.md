@@ -2,6 +2,8 @@
 All codes can be found within category.js here https://github.com/mp1pro/special-items-bigcommerce/blob/master/assets/js/theme/category.js
 and https://github.com/mp1pro/special-items-bigcommerce/blob/master/templates/pages/category.html
 
+The store is at https://test442.mybigcommerce.com/ and the preview code is k7cc4hbw4q
+
 ## Swap Image Feature
 
 This was implemented by loading the swapImage() function within the onReady function. Then used the built in data point 'this.context.categoryProducts' to fetch all the images associated with the products in the given category. Then used javascripts "mouseover" and "mouseout" event to swap the images.
