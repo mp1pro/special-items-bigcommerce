@@ -28,9 +28,17 @@ export default class Category extends CatalogPage {
     }
 
     onReady() {
+        this.swapImage();
+        
+        this.checkCart();
+        
         this.arrangeFocusOnSortBy();
 
         $('[data-button-type="add-cart"]').on('click', (e) => this.setLiveRegionAttributes($(e.currentTarget).next(), 'status', 'polite'));
+        
+        $('[data-button-type="add-all-cart"]').on('click', (e) => this.addAll($(e.currentTarget).next(), 'status', 'polite'));
+        
+        $('[data-button-type="remove-all-cart"]').on('click', (e) => this.removeAll($(e.currentTarget).next(), 'status', 'polite'));
 
         this.makeShopByPriceFilterAccessible();
 
@@ -46,6 +54,174 @@ export default class Category extends CatalogPage {
         $('a.reset-btn').on('click', () => this.setLiveRegionsAttributes($('span.reset-message'), 'status', 'polite'));
 
         this.ariaNotifyNoProducts();
+    }
+    
+    removeAll(){
+        function getCart(url) {
+            return fetch(url, {
+                method: "GET",
+                credentials: "same-origin"
+            })
+            .then(response => response.json());
+        };
+        function deleteCart(url, cartId) {
+            return fetch(url + cartId, {
+                method: "DELETE",
+                credentials: "same-origin",
+                headers: {
+                    "Content-Type": "application/json",}
+            })
+            .then(response => response.json());
+        };
+
+        getCart('/api/storefront/carts')
+        .then(data => { 
+            if(data.length !== 0){
+                //console.log('cart todelete',data[0].lineItems.physicalItems);
+                //let items = data[0].lineItems.physicalItems;
+                let cartId = data[0].id;
+                
+                console.log('cart id', typeof cartId);
+                
+                $(".removeAll").attr("style", "display:none;background-color:beige;");
+                $(".added").attr("style", "display:none;background-color:green;width:50%;color:white;");
+                $(".removed").attr("style", "display:block;background-color:orange;width:50%;color:black;");
+                
+                deleteCart(`/api/storefront/carts/`, cartId)
+                .catch(error => console.log(error));
+        
+
+                
+
+            }
+        })
+        .catch(error => console.error(error));
+    }
+    
+    checkCart(){
+        function getCart(url) {
+            return fetch(url, {
+                method: "GET",
+                credentials: "same-origin"
+            })
+            .then(response => response.json());
+        };
+        getCart('/api/storefront/carts')
+        .then(data => { 
+            if(data.length !== 0){
+                console.log('cart returned',data)
+                $(".removeAll").attr("style", "display:inline-block;background-color:beige;");
+            }
+        })
+        .catch(error => console.error(error));
+        
+        
+    }
+    
+    addAll(){
+        let lineItems = [];
+        let outerItes = [];
+        this.context.categoryProducts.forEach(function(e, i) {
+            
+                lineItems.push({"quantity": 1, "productId": e.id});
+            
+        });
+        let items = {lineItems};
+        console.log('lineItems', items);
+        //alert('test');
+        function getCart(url) {
+            return fetch(url, {
+                method: "GET",
+                credentials: "same-origin"
+            })
+            .then(response => response.json());
+        };
+        
+        function createCart(url, cartItems) {
+            return fetch(url, {
+                method: "POST",
+                credentials: "same-origin",
+                headers: {
+                    "Content-Type": "application/json"},
+                body: JSON.stringify(cartItems),
+            })
+            .then(response => response.json());
+        };
+        
+        function addCartItem(url, cartId, cartItems) {
+            return fetch(url + cartId + '/items', {
+                method: "POST",
+                credentials: "same-origin",
+                headers: {
+                    "Content-Type": "application/json"},
+                body: JSON.stringify(cartItems),
+            })
+            .then(response => response.json());
+        };
+        
+        getCart('/api/storefront/carts')
+        .then(data => { 
+            if(data.length === 0){
+                console.log('no cart returned',items);
+                
+                
+                createCart(`/api/storefront/carts`, items)
+                .then((data) => {
+                    if(data !== "" ){
+                        $(".added").attr("style", "display:block;background-color:green;width:50%;color:white;");
+                        $(".removeAll").attr("style", "display:inline-block;background-color:beige;");
+                    }
+                })
+                .catch(error => console.error(error));
+                
+            }
+            else{
+                //console.log('cart cexist', data[0].id);
+                addCartItem(`/api/storefront/carts/`, data[0].id, items)
+                .then(data => {
+                    if(data !== "" ){
+                        $(".added").attr("style", "display:block;background-color:green;width:50%;color:white;");
+                    }
+                })
+                .catch(error => console.error(error));
+
+            }
+        })
+        .catch(error => console.error(error));
+
+    }
+    
+    swapImage() {
+        console.log('context',this);
+        let image1 = '';
+        let image2 = '';
+        let images = [];
+        let imagess = [];
+        //console.log('productspercat',e);
+        this.context.categoryProducts.forEach(function(e, i) {
+            e.images.forEach(function(a, b) {
+                images.push(a);
+            })
+        });
+        
+        $('.card-image')
+        .on('mouseover', function() {
+            
+            //console.log('hover',this.alt);
+            //console.log('images',images);
+            imagess = images.filter(element => element.alt === this.alt);
+            //console.log('imagess',imagess);
+            
+            let first = imagess[0].data;
+            let second = imagess[1].data;
+            image1 = first.replace('{:size}', '500x659');
+            image2 = second.replace('{:size}', '500x659');
+            //console.log('image1',image1);
+            //console.log('image2',image2);
+            $(this).attr({src: image2, srcset: image2});
+        }).on('mouseout', function() {
+            $(this).attr({src:image1, srcset:image1});
+        });
     }
 
     ariaNotifyNoProducts() {

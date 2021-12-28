@@ -1,4 +1,5 @@
 {{inject 'noCompareMessage' (lang 'compare.no_compare')}}
+{{inject "categoryProducts" category.products}}
 
 {{#if category.products}}
     {{> components/products/filter sort=pagination.category.sort}}

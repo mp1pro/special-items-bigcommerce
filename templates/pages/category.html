@@ -6,6 +6,7 @@ category:
 ---
 {{inject "categoryProductsPerPage" theme_settings.categorypage_products_per_page}}
 {{inject "categoryId" category.id}}
+{{inject "categoryProductsz" category.products}}
 {{#partial "head"}}
     {{#if pagination.category.previous}}
         <link rel="prev" href="{{pagination.category.previous}}">
@@ -30,6 +31,12 @@ category:
     <h1 class="page-heading">{{category.name}}</h1>
     {{{region name="category_below_header"}}}
 {{/unless}}
+
+<a href="#" class="button addAll" data-button-type="add-all-cart" style="background-color:lightblue">Add All to Cart</a>
+<a href="#" class="button removeAll" data-button-type="remove-all-cart" style="background-color:beige;display:none">Remove All from Cart</a>
+<div class="added" style="display:none">The items have been added to the cart</div>
+<div class="removed" style="display:none">The items have been removed from the cart</div>
+
 {{{category.description}}}
 <div class="page">
     {{#if category.faceted_search_enabled}}
